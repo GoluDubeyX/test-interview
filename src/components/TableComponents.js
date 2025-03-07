@@ -36,7 +36,6 @@ const TableComponents = () => {
     setFilterData(filtered);
   }
 
-  // **🔹 खुद का Sorting Logic**
   function handleSort() {
     let sortedData = [...filterData];
     
