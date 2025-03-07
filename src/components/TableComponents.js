@@ -7,37 +7,54 @@ const TableComponents = () => {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
-
   useEffect(() => {
-    fetch(`https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=10`)
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data);
-        setFilterData(data);
-      });
+    async function fetchData() {
+      try {
+        const response = await fetch(
+          `https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=10`
+        );
+        const result = await response.json();
+        setData(result);
+        setFilterData(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    fetchData();
   }, [page]);
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
+  function handleSearch(event) {
+    const value = event.target.value.toLowerCase();
     setSearchQuery(value);
     
-    setTimeout(() => {
-      const filtered = data.filter((item) =>
-        item.title.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilterData(filtered);
-    }, 200);
-  };
+    let filtered = [];
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].title.toLowerCase().indexOf(value) !== -1) {
+        filtered.push(data[i]);
+      }
+    }
+    setFilterData(filtered);
+  }
 
-  const handleSort = () => {
-    const sortedData = [...filterData].sort((a, b) => {
-      return sortOrder === "asc"
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title);
-    });
+  // **🔹 खुद का Sorting Logic**
+  function handleSort() {
+    let sortedData = [...filterData];
+    
+    for (let i = 0; i < sortedData.length - 1; i++) {
+      for (let j = i + 1; j < sortedData.length; j++) {
+        if (
+          (sortOrder === "asc" && sortedData[i].title > sortedData[j].title) ||
+          (sortOrder === "desc" && sortedData[i].title < sortedData[j].title)
+        ) {
+          let temp = sortedData[i];
+          sortedData[i] = sortedData[j];
+          sortedData[j] = temp;
+        }
+      }
+    }
     setFilterData(sortedData);
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-  };
+  }
 
   return (
     <div className="table-container">
